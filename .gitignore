@@ -40,3 +40,26 @@ gradle/wrapper/gradlew*
 
 # External build artifacts
 ext/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Android Studio specific
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Signing keys (security)
+*.jks
+*.keystore
+keys.json
+
+# Logs
+*.log
