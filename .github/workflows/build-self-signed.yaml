@@ -1,0 +1,187 @@
+name: Build Self-Signed APK
+
+# This workflow builds and publishes self-signed APKs for this personal fork
+# Triggers on:
+# - Push to main branch: Creates debug build as artifact
+# - Version tags (e.g., v1.0.0): Creates release build and GitHub Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Build type (debug or release)'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+
+env:
+  BUILD_USER: android-builder
+  BUILD_HOST: github.actions
+
+jobs:
+  build-debug:
+    name: Build Debug APK
+    # Only run on branch pushes (not tags) or manual dispatch with debug
+    if: |
+      (github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/')) || 
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.release_type == 'debug')
+    runs-on: ubuntu-latest
+    container: ghcr.io/syncthing/syncthing-android-builder
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --system --add safe.directory '*'
+
+      - name: Build Native Libraries
+        run: |
+          java -version
+          ./gradlew --no-daemon buildNative
+
+      - name: Run Lint
+        run: |
+          ./gradlew --no-daemon lint
+
+      - name: Build Debug APK
+        run: |
+          ./gradlew --no-daemon assembleDebug
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: syncthing-android-debug-${{ github.sha }}
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - name: Upload Lint Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-reports-${{ github.sha }}
+          path: app/build/reports/
+
+  build-release:
+    name: Build Self-Signed Release APK
+    # Only run on tag pushes or manual dispatch with release
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.release_type == 'release')
+    runs-on: ubuntu-latest
+    container: ghcr.io/syncthing/syncthing-android-builder
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --system --add safe.directory '*'
+
+      - name: Generate Self-Signed Keystore
+        run: |
+          # Generate a new keystore for this build
+          # For personal use, security is less critical than convenience
+          keytool -genkeypair \
+            -keystore ${{ runner.temp }}/release-key.jks \
+            -alias android \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass android \
+            -keypass android \
+            -dname "CN=Personal Fork, OU=Personal, O=Personal, L=Personal, ST=Personal, C=US"
+          echo "Keystore generated successfully"
+
+      - name: Build Native Libraries
+        run: |
+          java -version
+          ./gradlew --no-daemon buildNative
+
+      - name: Run Lint
+        run: |
+          ./gradlew --no-daemon lint
+
+      - name: Build Release APK
+        env:
+          SYNCTHING_RELEASE_STORE_FILE: ${{ runner.temp }}/release-key.jks
+          SYNCTHING_RELEASE_KEY_ALIAS: android
+          SIGNING_PASSWORD: android
+        run: |
+          ./gradlew --no-daemon assembleRelease
+          echo "Release APK built successfully"
+
+      - name: Generate APK Checksum
+        run: |
+          cd app/build/outputs/apk/release
+          sha256sum app-release.apk > sha256sum.txt
+          cat sha256sum.txt
+
+      - name: Upload Release APK as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: syncthing-android-release-${{ github.sha }}
+          path: |
+            app/build/outputs/apk/release/app-release.apk
+            app/build/outputs/apk/release/sha256sum.txt
+          if-no-files-found: error
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: |
+            app/build/outputs/apk/release/app-release.apk
+            app/build/outputs/apk/release/sha256sum.txt
+          artifactErrorsFailBuild: true
+          body: |
+            ## Syncthing Android Fork - Self-Signed Release
+            
+            **Version**: ${{ github.ref_name }}
+            **Build Date**: ${{ github.event.head_commit.timestamp }}
+            **Commit**: ${{ github.sha }}
+            
+            ### Installation Instructions
+            
+            1. Download the `app-release.apk` file
+            2. Enable "Install from Unknown Sources" on your Android device
+            3. Install the APK
+            4. Verify the SHA256 checksum matches the one in `sha256sum.txt`
+            
+            ### Notes
+            
+            - This is a **self-signed** APK for personal use
+            - You may need to uninstall previous versions first
+            - The app package is `com.nutomic.syncthingandroid`
+            
+            ### What's Changed
+            
+            See commit history for details: https://github.com/${{ github.repository }}/commits/${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          name: Release ${{ github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Lint Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-reports-release-${{ github.sha }}
+          path: app/build/reports/

@@ -1,21 +1,27 @@
-# Discontinued
+# Syncthing Android - Personal Fork
 
-This app is discontinued. The last release on Github and F-Droid will happen
-with the December 2024 Syncthing version. Interactions (issues, PRs) are limited
-now, and the entire repo will be archived after the last release. Thus all
-contributions are preserved for any future (re)use. The forum is still open for
-discussions and questions. I would kindly ask you to refrain from trying to
-challenge the decision or asking "why-type" questions - I wont engage with them.
+[![License: MPLv2](https://img.shields.io/badge/License-MPLv2-blue.svg)](https://opensource.org/licenses/MPL-2.0)
+[![Build Status](https://github.com/cmwen/syncthing-android-fork/workflows/Build%20Self-Signed%20APK/badge.svg)](https://github.com/cmwen/syncthing-android-fork/actions)
 
-The reason is a combination of Google making Play publishing something between
-hard and impossible and no active maintenance. The app saw no significant
-development for a long time and without Play releases I do no longer see enough
-benefit and/or have enough motivation to keep up the ongoing maintenance an app
-requires even without doing much, if any, changes.
+> **Note**: This is a personal fork of [syncthing-android](https://github.com/syncthing/syncthing-android) maintained for personal use only. The upstream project was discontinued in December 2024.
 
-Thanks a lot to everyone who ever contributed to this app!
+## About This Fork
 
-# syncthing-android
+This fork exists to maintain a stable version of Syncthing Android for personal use. It includes several improvements:
+
+- ✅ **AI-Friendly Structure**: Enhanced documentation and code organization for better AI assistant understanding
+- ✅ **Self-Signed Builds**: Automated GitHub Actions workflow for creating self-signed APKs
+- ✅ **GitHub Releases**: Automatic release creation with APK artifacts when version tags are pushed
+- ✅ **Simplified Workflow**: No Google Play Store dependencies or signing secrets required
+- ✅ **Clear Documentation**: Comprehensive guides for building, understanding, and modifying the code
+
+This fork is **not intended for distribution** - it's for personal use and learning purposes.
+
+## Upstream Notice
+
+The original syncthing-android project was discontinued in December 2024 due to Google Play Store publishing difficulties and lack of active maintenance. All credit goes to the original contributors who built this excellent application. This fork preserves that work for personal use.
+
+# Overview
 
 [![License: MPLv2](https://img.shields.io/badge/License-MPLv2-blue.svg)](https://opensource.org/licenses/MPL-2.0)
 
@@ -37,11 +43,41 @@ need to be added in the repository first, then appear automatically in Weblate.
 [1]: https://support.google.com/googleplay/android-developer/table/4419860
 [2]: https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/res/res/
 
-# Building
+# Quick Start
+
+## Download Pre-Built APKs
+
+The easiest way to use this fork is to download pre-built APKs from the [Releases](https://github.com/cmwen/syncthing-android-fork/releases) page.
+
+1. Download the latest `app-release.apk` from [Releases](https://github.com/cmwen/syncthing-android-fork/releases)
+2. Enable "Install from Unknown Sources" on your Android device
+3. Install the APK
+4. (Optional) Verify SHA256 checksum against `sha256sum.txt`
+
+## Building from Source
+
+### Quick Build (Using Docker)
+
+The simplest way to build is using the provided Docker container:
+
+```bash
+# Clone with submodules
+git clone --recursive https://github.com/cmwen/syncthing-android-fork.git
+cd syncthing-android-fork
+
+# Build using Docker (recommended)
+docker build -f docker/Dockerfile -t syncthing-builder .
+docker run --rm -v $(pwd):/project syncthing-builder ./gradlew buildNative assembleDebug
+
+# APK will be at: app/build/outputs/apk/debug/app-debug.apk
+```
+
+### Manual Build (Local Environment)
+
+# Building Locally
 
 These dependencies and instructions are necessary for building from the command
-line. If you build using Docker or Android Studio, you don't need to set up and
-follow them separately.
+line. If you build using Docker (recommended above), you don't need to set up these separately.
 
 ## Dependencies
 
@@ -74,28 +110,216 @@ follow them separately.
 
 ## Build instructions
 
-1. Clone the project with
+1. Clone the project with submodules:
+   ```bash
+   git clone --recursive https://github.com/cmwen/syncthing-android-fork.git
+   cd syncthing-android-fork
    ```
-   git clone https://github.com/syncthing/syncthing-android.git --recursive
-   ```
-   Alternatively, if already present on the disk, run
-   ```
+   
+   Or if already cloned, initialize submodules:
+   ```bash
    git submodule init && git submodule update
    ```
-   in the project folder.
-2. Make sure that the `ANDROID_HOME` environment variable is set to the path
-   containing the Android SDK (see [Dependecies](#dependencies)).
-3. Navigate inside `syncthing-android`, then build the APK file with
-   ```
-   ./gradlew buildNative
-   ./gradlew assembleDebug
-   ```
-4. Once completed, `app-debug.apk` will be present inside `app/build/outputs/apk/debug`.
 
-**NOTE:** On Windows, you must use the Command Prompt (and not PowerShell) to
-compile. When doing so, in the commands replace all forward slashes `/` with
-backslashes `\`.
+2. Set up environment:
+   ```bash
+   # Set Android SDK path
+   export ANDROID_HOME=/path/to/android-sdk
+   
+   # Verify Java version (should be 11)
+   java -version
+   
+   # Verify Go version (should be 1.22.7)
+   go version
+   ```
+
+3. Build native Syncthing libraries (required first):
+   ```bash
+   ./gradlew buildNative
+   ```
+   
+   This compiles the Go-based Syncthing core for all Android architectures (ARM, x86).
+
+4. Build the APK:
+   ```bash
+   # Debug build (for development/testing)
+   ./gradlew assembleDebug
+   
+   # Release build (self-signed, for personal use)
+   ./gradlew assembleRelease
+   ```
+
+5. Find your APK:
+   - Debug: `app/build/outputs/apk/debug/app-debug.apk`
+   - Release: `app/build/outputs/apk/release/app-release.apk`
+
+6. Install on device:
+   ```bash
+   adb install app/build/outputs/apk/debug/app-debug.apk
+   ```
+
+### Platform-Specific Notes
+
+**Windows**: Use Command Prompt (not PowerShell). Replace `/` with `\` in paths.
+
+**Linux/Mac**: Ensure `ANDROID_HOME` is set and tools are in `PATH`.
+
+### Troubleshooting
+
+- **Build fails**: Check that all dependencies are installed and environment variables are set
+- **Native build fails**: Ensure Go 1.22.7+ is installed and accessible
+- **Gradle errors**: Try `./gradlew clean` then rebuild
+- **APK won't install**: Uninstall any existing version first
+
+# Automated Builds with GitHub Actions
+
+This fork includes automated CI/CD workflows for building and releasing APKs.
+
+## Workflows
+
+### 1. Build Self-Signed APK (`.github/workflows/build-self-signed.yaml`)
+
+**Primary workflow for this fork** - builds self-signed APKs automatically.
+
+**Triggers:**
+- **Push to main branch**: Creates debug APK as artifact
+- **Version tags** (e.g., `v1.28.2`): Creates release APK and GitHub Release
+- **Manual dispatch**: Build debug or release on-demand
+
+**What it does:**
+1. Checks out code with submodules
+2. Builds native Syncthing libraries using Go and NDK
+3. Runs lint checks
+4. Assembles APK (debug or release)
+5. Generates SHA256 checksum
+6. Uploads artifacts to GitHub Actions
+7. For tags: Creates GitHub Release with APK
+
+**Usage:**
+```bash
+# Trigger debug build: Push to main
+git push origin main
+
+# Trigger release build: Push version tag
+git tag v1.28.2
+git push origin v1.28.2
+
+# Manual trigger: Use GitHub Actions UI -> Run workflow
+```
+
+### 2. Legacy Workflows
+
+- `build-app.yaml`: Original debug build workflow (kept for `release` branch)
+- `release-app.yaml`: Original release workflow (disabled, requires secrets)
+- `build-builder.yaml`: Docker builder image workflow
+
+## Creating a Release
+
+To create a new release with automatic APK builds:
+
+1. Update version in `app/build.gradle.kts`:
+   ```kotlin
+   versionCode = 4396  // Increment
+   versionName = "1.28.2"  // Update
+   ```
+
+2. Commit changes:
+   ```bash
+   git add app/build.gradle.kts
+   git commit -m "Bump version to 1.28.2"
+   git push origin main
+   ```
+
+3. Create and push version tag:
+   ```bash
+   git tag v1.28.2
+   git push origin v1.28.2
+   ```
+
+4. GitHub Actions will automatically:
+   - Build self-signed release APK
+   - Generate checksums
+   - Create GitHub Release with artifacts
+
+5. Download from: `https://github.com/cmwen/syncthing-android-fork/releases`
+
+## Self-Signed APK Security
+
+This fork uses **self-signed** APKs generated on-the-fly by GitHub Actions:
+
+- **Keystore**: Generated per-build using `keytool` with standard parameters
+- **Validity**: 10,000 days (approx. 27 years)
+- **Password**: Standard password (for convenience in personal use)
+- **Not for distribution**: These APKs are for personal use only
+
+For production use, you should:
+1. Generate a permanent keystore
+2. Store it securely in GitHub Secrets
+3. Modify workflow to use your keystore
+
+# AI-Friendly Development
+
+This fork is optimized for AI assistant collaboration:
+
+## Documentation Structure
+
+- **`.github/AI_CONTEXT.md`**: Comprehensive project overview for AI assistants
+- **Inline Comments**: Key files include explanatory comments
+- **Clear Naming**: Variables and files use descriptive names
+- **Modular Structure**: Code organized logically by feature
+
+## For AI Assistants
+
+When working with this codebase:
+
+1. **Read** `.github/AI_CONTEXT.md` first for project understanding
+2. **Build Process**: Two-phase (native build → APK assembly)
+3. **Key Files**:
+   - `app/build.gradle.kts`: Android app configuration
+   - `build.gradle.kts`: Root build configuration
+   - `.github/workflows/build-self-signed.yaml`: CI/CD workflow
+4. **Testing**: Run `./gradlew buildNative assembleDebug` to validate changes
+5. **Workflow Testing**: Push to test branch or use manual dispatch
+
+## Project Structure for AI
+
+```
+syncthing-android-fork/
+├── .github/
+│   ├── AI_CONTEXT.md              # AI-friendly overview
+│   └── workflows/
+│       └── build-self-signed.yaml # Main build workflow
+├── app/                           # Android application
+│   ├── build.gradle.kts          # App build config
+│   └── src/                      # Java source code
+├── syncthing/                     # Native library (submodule)
+├── build.gradle.kts              # Root build config
+└── README.md                     # This file
+```
+
+## Contributing (AI or Human)
+
+This is a personal fork, but improvements are welcome:
+
+1. **Documentation**: Enhance clarity and completeness
+2. **Build System**: Simplify or optimize build process
+3. **Workflows**: Improve CI/CD automation
+4. **Code Quality**: Better organization or comments
+
+When making changes:
+- Keep changes minimal and focused
+- Document why, not just what
+- Test build process after changes
+- Update AI_CONTEXT.md if structure changes
 
 # License
 
 The project is licensed under the [MPLv2](LICENSE).
+
+## Credits
+
+- **Original Project**: [syncthing-android](https://github.com/syncthing/syncthing-android) by the Syncthing community
+- **Syncthing Core**: [Syncthing](https://github.com/syncthing/syncthing)
+- **This Fork**: Personal modifications for AI-friendly structure and self-signed builds
+
+Thanks to all original contributors who built this excellent application!

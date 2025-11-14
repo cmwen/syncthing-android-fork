@@ -1,13 +1,18 @@
-name: Release App
+name: Release App (Legacy - Requires Secrets)
+
+# Legacy workflow from upstream syncthing-android
+# This workflow requires signing secrets and Google Play credentials
+# For this personal fork, use build-self-signed.yaml with v* tags instead
+# This workflow is disabled by using non-standard tag patterns
 
 on:
   push:
-    # Cannot filter on both branches (release) and tags - it's ORed
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
-      - '[0-9]+.[0-9]+.[0-9]+.[0-9]+'
-      - '[0-9]+.[0-9]+.[0-9]+-rc\.[0-9]+'
-      - '[0-9]+.[0-9]+.[0-9]+-rc\.[0-9]+\.[0-9]+'
+      # Modified to avoid conflicts with self-signed workflow (which uses v* tags)
+      - 'upstream-[0-9]+.[0-9]+.[0-9]+'
+      - 'upstream-[0-9]+.[0-9]+.[0-9]+.[0-9]+'
+      - 'upstream-[0-9]+.[0-9]+.[0-9]+-rc\.[0-9]+'
+      - 'upstream-[0-9]+.[0-9]+.[0-9]+-rc\.[0-9]+\.[0-9]+'
 
 env:
   # Our build metadata

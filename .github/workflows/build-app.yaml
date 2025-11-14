@@ -1,11 +1,14 @@
-name: Build App
+name: Build App (Legacy)
+
+# Legacy workflow from upstream syncthing-android
+# For the fork, prefer using build-self-signed.yaml instead
+# This workflow is kept for compatibility with upstream patterns
 
 on:
   pull_request:
   push:
     branches:
-      - main
-      - release
+      - release  # Keep only release branch for compatibility
 
 env:
   # Our build metadata
