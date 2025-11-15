@@ -79,8 +79,8 @@ android {
         applicationId = "com.nutomic.syncthingandroid"  // Unique app identifier
         minSdk = 21          // Android 5.0 Lollipop (minimum supported version)
         targetSdk = 33       // Android 13 (target features and behavior)
-        versionCode = 4395   // Numeric version for Play Store (increment each release)
-        versionName = "1.28.1"  // Human-readable version string
+        versionCode = 4397   // Numeric version for Play Store (increment each release)
+        versionName = "1.28.3"  // Human-readable version string
         
         // Testing configuration
         testApplicationId = "com.nutomic.syncthingandroid.test"

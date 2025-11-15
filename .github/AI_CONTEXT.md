@@ -179,8 +179,8 @@ This fork includes several improvements for AI understanding and automation:
 
 ## Versioning
 
-- **Version Code**: Incremented for each release (currently 4395)
-- **Version Name**: Semantic versioning (currently 1.28.1)
+- **Version Code**: Incremented for each release (currently 4397)
+- **Version Name**: Semantic versioning (currently 1.28.3)
 - Format: `major.minor.patch` or `major.minor.patch.hotfix`
 
 ## License
