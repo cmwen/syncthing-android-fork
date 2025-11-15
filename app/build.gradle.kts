@@ -89,16 +89,28 @@ android {
 
     // Signing configuration for release builds
     // Uses environment variables to avoid storing secrets in code
+    // Supports both old (SYNCTHING_*) and new (ANDROID_*) naming conventions for backward compatibility
     signingConfigs {
         create("release") {
-            // Path to keystore file (set via SYNCTHING_RELEASE_STORE_FILE env var)
-            storeFile = System.getenv("SYNCTHING_RELEASE_STORE_FILE")?.let(::file)
-            // Keystore password (set via SIGNING_PASSWORD env var)
-            storePassword = System.getenv("SIGNING_PASSWORD")
-            // Key alias in keystore (set via SYNCTHING_RELEASE_KEY_ALIAS env var)
-            keyAlias = System.getenv("SYNCTHING_RELEASE_KEY_ALIAS")
-            // Key password (set via SIGNING_PASSWORD env var)
-            keyPassword = System.getenv("SIGNING_PASSWORD")
+            // Path to keystore file
+            // Priority: ANDROID_KEYSTORE_PATH > SYNCTHING_RELEASE_STORE_FILE
+            storeFile = (System.getenv("ANDROID_KEYSTORE_PATH") 
+                ?: System.getenv("SYNCTHING_RELEASE_STORE_FILE"))?.let(::file)
+            
+            // Keystore password
+            // Priority: ANDROID_KEYSTORE_PASSWORD > SIGNING_PASSWORD
+            storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD") 
+                ?: System.getenv("SIGNING_PASSWORD")
+            
+            // Key alias in keystore
+            // Priority: ANDROID_KEY_ALIAS > SYNCTHING_RELEASE_KEY_ALIAS
+            keyAlias = System.getenv("ANDROID_KEY_ALIAS") 
+                ?: System.getenv("SYNCTHING_RELEASE_KEY_ALIAS")
+            
+            // Key password
+            // Priority: ANDROID_KEY_PASSWORD > SIGNING_PASSWORD
+            keyPassword = System.getenv("ANDROID_KEY_PASSWORD") 
+                ?: System.getenv("SIGNING_PASSWORD")
         }
     }
 
