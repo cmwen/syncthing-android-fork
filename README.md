@@ -72,12 +72,38 @@ docker run --rm -v $(pwd):/project syncthing-builder ./gradlew buildNative assem
 # APK will be at: app/build/outputs/apk/debug/app-debug.apk
 ```
 
+### DevContainer Build (Recommended for Development)
+
+The easiest way to develop is using VS Code with the Remote-Containers extension. All dependencies are pre-configured:
+
+```bash
+# Clone with submodules
+git clone --recursive https://github.com/cmwen/syncthing-android-fork.git
+cd syncthing-android-fork
+
+# Open in VS Code
+code .
+
+# VS Code will prompt to "Reopen in Container" - click it
+# Once the container is ready, build:
+./gradlew buildNative assembleDebug
+
+# APK will be at: app/build/outputs/apk/debug/app-debug.apk
+```
+
+The devcontainer includes:
+- Android SDK (API 34)
+- Android NDK (26.1.10909125)
+- Java 17
+- Go 1.22
+- All required build tools
+
 ### Manual Build (Local Environment)
 
 # Building Locally
 
 These dependencies and instructions are necessary for building from the command
-line. If you build using Docker (recommended above), you don't need to set up these separately.
+line. If you build using Docker or DevContainer (recommended above), you don't need to set up these separately.
 
 ## Dependencies
 
@@ -177,40 +203,64 @@ This fork includes automated CI/CD workflows for building and releasing APKs.
 
 ## Workflows
 
-### 1. Build Self-Signed APK (`.github/workflows/build-self-signed.yaml`)
+### 1. Android CI (`.github/workflows/ci.yml`)
 
-**Primary workflow for this fork** - builds self-signed APKs automatically.
+**Primary CI workflow** - runs on every push and pull request.
 
 **Triggers:**
-- **Push to main branch**: Creates debug APK as artifact
-- **Version tags** (e.g., `v1.28.2`): Creates release APK and GitHub Release
-- **Manual dispatch**: Build debug or release on-demand
+- Push to `main` or `release` branches
+- Pull requests to `main` or `release` branches
 
 **What it does:**
 1. Checks out code with submodules
-2. Builds native Syncthing libraries using Go and NDK
+2. Builds native Syncthing libraries
 3. Runs lint checks
-4. Assembles APK (debug or release)
-5. Generates SHA256 checksum
-6. Uploads artifacts to GitHub Actions
-7. For tags: Creates GitHub Release with APK
+4. Builds debug APK
+5. Uploads artifacts and reports
+
+### 2. Android Release (`.github/workflows/release.yml`)
+
+**Release workflow** - creates signed release builds and GitHub releases.
+
+**Triggers:**
+- Push to version tags (e.g., `v1.28.2`)
+- Manual workflow dispatch with version parameters
+
+**What it does:**
+1. Builds native libraries and release APK
+2. Signs APK (uses secrets if available, generates self-signed otherwise)
+3. Generates SHA256 checksums
+4. Creates GitHub Release with APK and checksums
 
 **Usage:**
 ```bash
-# Trigger debug build: Push to main
-git push origin main
-
-# Trigger release build: Push version tag
+# Option 1: Push a version tag (automatic release)
 git tag v1.28.2
 git push origin v1.28.2
 
-# Manual trigger: Use GitHub Actions UI -> Run workflow
+# Option 2: Manual dispatch via GitHub Actions UI
+# Go to Actions → Android Release → Run workflow
+# Enter version name (e.g., 1.28.2) and version code (e.g., 4396)
 ```
 
-### 2. Legacy Workflows
+### 3. CodeQL Security Scan (`.github/workflows/codeql.yml`)
 
+**Security scanning workflow** - analyzes code for vulnerabilities.
+
+**Triggers:**
+- Push to `main` branch
+- Pull requests to `main` branch
+- Weekly schedule (Mondays)
+
+**What it does:**
+1. Analyzes Java code for security issues
+2. Reports findings in Security tab
+
+### 4. Legacy Workflows (Compatibility)
+
+- `build-self-signed.yaml`: Previous main workflow (replaced by ci.yml and release.yml)
 - `build-app.yaml`: Original debug build workflow (kept for `release` branch)
-- `release-app.yaml`: Original release workflow (disabled, requires secrets)
+- `release-app.yaml`: Original release workflow (disabled)
 - `build-builder.yaml`: Docker builder image workflow
 
 ## Creating a Release
@@ -243,19 +293,63 @@ To create a new release with automatic APK builds:
 
 5. Download from: `https://github.com/cmwen/syncthing-android-fork/releases`
 
-## Self-Signed APK Security
+## Signing Configuration
 
-This fork uses **self-signed** APKs generated on-the-fly by GitHub Actions:
+### Self-Signed APKs (Default)
+
+By default, this fork uses **self-signed** APKs generated automatically by GitHub Actions:
 
 - **Keystore**: Generated per-build using `keytool` with standard parameters
 - **Validity**: 10,000 days (approx. 27 years)
 - **Password**: Standard password (for convenience in personal use)
 - **Not for distribution**: These APKs are for personal use only
 
-For production use, you should:
-1. Generate a permanent keystore
-2. Store it securely in GitHub Secrets
-3. Modify workflow to use your keystore
+### Using Your Own Keystore (Recommended for Personal Use)
+
+For consistent signatures across builds (allows seamless updates), configure GitHub Secrets:
+
+1. Generate a permanent keystore locally:
+   ```bash
+   keytool -genkeypair \
+     -keystore release.keystore \
+     -alias android \
+     -keyalg RSA \
+     -keysize 2048 \
+     -validity 10000 \
+     -storepass YOUR_STORE_PASSWORD \
+     -keypass YOUR_KEY_PASSWORD \
+     -dname "CN=Your Name, OU=Personal, O=Personal, L=City, ST=State, C=US"
+   ```
+
+2. Base64-encode the keystore:
+   ```bash
+   base64 -i release.keystore -o release.keystore.base64
+   ```
+
+3. Add the following secrets to your GitHub repository (Settings → Secrets → Actions):
+   - `ANDROID_KEYSTORE_BASE64`: Contents of `release.keystore.base64`
+   - `ANDROID_KEYSTORE_PASSWORD`: Your store password
+   - `ANDROID_KEY_ALIAS`: `android` (or your chosen alias)
+   - `ANDROID_KEY_PASSWORD`: Your key password
+
+4. The release workflow will automatically use these secrets when available
+
+### Secret Naming Convention
+
+This fork now uses standardized secret names for consistency:
+
+**New names (recommended)**:
+- `ANDROID_KEYSTORE_BASE64` — Base64-encoded keystore file
+- `ANDROID_KEYSTORE_PASSWORD` — Keystore password
+- `ANDROID_KEY_ALIAS` — Key alias
+- `ANDROID_KEY_PASSWORD` — Key password
+
+**Old names (still supported for backward compatibility)**:
+- `SYNCTHING_RELEASE_STORE_FILE` — Path to keystore file
+- `SYNCTHING_RELEASE_KEY_ALIAS` — Key alias
+- `SIGNING_PASSWORD` — Password for both keystore and key
+
+The build system checks for new names first, then falls back to old names.
 
 # AI-Friendly Development
 

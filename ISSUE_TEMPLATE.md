@@ -1,21 +1,43 @@
-Do not report security issues in this bug tracker. Instead, contact security@syncthing.net directly - see https://syncthing.net/security for more information.
+# Issue Guidelines
 
-If your issue is a support request ("How do I get my devices to connect?" or similar), please use the support forum at https://forum.syncthing.net/ where a large number of helpful people hang out. This issue tracker is for reporting bugs or feature requests directly to the developers.
+## Personal Fork Notice
 
-If your issue is a bug report, replace this boilerplate with a description of the problem, being sure to include at least:
+This is a **personal fork** maintained for personal use. The upstream project (syncthing-android) was discontinued in December 2024.
 
-    what happened,
-    what you expected to happen instead, and
-    any steps to reproduce the problem.
+## Before Opening an Issue
 
-Also fill out the version information below and add log output or screenshots as appropriate.
+- **Security Issues**: Do not report security issues publicly. Contact the repository owner directly.
+- **Upstream Issues**: For issues related to Syncthing core functionality, see the [main Syncthing project](https://github.com/syncthing/syncthing/issues).
+- **Support Questions**: For general Syncthing usage questions, visit the [Syncthing forum](https://forum.syncthing.net/).
 
-Do not file a feature request unless you want to implement it yourself. This is
-due to the maintenance status of this project, see [the readme for
-context](https://github.com/syncthing/syncthing-android#status-maintenance-mode---co-maintainers-welcome).
+## Bug Reports
+
+Replace this text with a clear description of the problem, including:
+
+- **What happened**: Describe the issue clearly
+- **Expected behavior**: What you expected to happen instead
+- **Steps to reproduce**: How to reproduce the problem
+- **Logs**: Include relevant log entries from Settings → Open Log → Android Log
+- **Screenshots**: If the issue is UI-related
 
 ### Version Information
 
-    App Version: 0.x.y
-    Syncthing Version: v0.x.y
-    Android Version: Android x.y / Cyanogenmod x / ...
+```
+App Version: [e.g., 1.28.1]
+Syncthing Version: [e.g., v1.28.0]
+Android Version: [e.g., Android 14]
+Device Model: [e.g., Pixel 7]
+```
+
+## Build/Development Issues
+
+For issues related to building or developing this fork:
+
+- Include your development environment (OS, Java version, Go version)
+- Include the full error message and stack trace
+- Specify whether you're building locally or using DevContainer
+- Include relevant parts of your build output
+
+## Feature Requests
+
+This is a personal fork focused on maintaining existing functionality. Major feature additions are unlikely to be implemented. Small improvements and fixes are welcome.
