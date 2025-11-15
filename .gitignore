@@ -63,3 +63,15 @@ keys.json
 
 # Logs
 *.log
+
+# DevContainer volume data
+.devcontainer/.gradle/
+.devcontainer/.android/
+
+# VS Code settings (user-specific)
+.vscode/settings.json
+.vscode/launch.json
+.vscode/*.log
+
+# Git conflict files
+*.orig
