@@ -2,8 +2,11 @@
 
 [![License: MPLv2](https://img.shields.io/badge/License-MPLv2-blue.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Build Status](https://github.com/cmwen/syncthing-android-fork/workflows/Build%20Self-Signed%20APK/badge.svg)](https://github.com/cmwen/syncthing-android-fork/actions)
+[![Syncthing Version](https://img.shields.io/badge/Syncthing-v2.0.11-brightgreen.svg)](https://github.com/syncthing/syncthing/releases/tag/v2.0.11)
 
 > **Note**: This is a personal fork of [syncthing-android](https://github.com/syncthing/syncthing-android) maintained for personal use only. The upstream project was discontinued in December 2024.
+
+> **⚠️ Important**: This fork now uses **Syncthing 2.0.11**. Syncthing 2.x cannot sync with 1.x devices. All devices in your network must be upgraded together for compatibility.
 
 ## About This Fork
 
@@ -45,14 +48,38 @@ need to be added in the repository first, then appear automatically in Weblate.
 
 # Quick Start
 
+## ⚠️ Upgrading from 1.x to 2.0
+
+**Important Changes in Syncthing 2.0:**
+
+1. **Protocol Incompatibility**: Syncthing 2.x devices **cannot sync** with 1.x devices. You must upgrade **all devices** in your network together.
+
+2. **Database Migration**: On first launch, Syncthing 2.0 will migrate your database from LevelDB to SQLite. This can take several minutes for large setups. The app may appear frozen - this is normal.
+
+3. **Key Improvements**:
+   - Faster scanning and syncing (removed rolling hash detection)
+   - Multiple connections by default (improved performance)
+   - Better database reliability (SQLite vs LevelDB)
+   - Deleted items expire after 15 months (instead of forever)
+
+4. **Upgrade Steps**:
+   - Backup your existing Syncthing configuration (optional but recommended)
+   - Upgrade **all** Android devices first
+   - Then upgrade other devices (desktop, servers, etc.)
+   - Wait for database migration to complete on first launch
+   - Verify all devices can connect and sync
+
+**If you cannot upgrade all devices immediately**, stay on version 1.28.3 from [previous releases](https://github.com/cmwen/syncthing-android-fork/releases/tag/v1.28.3).
+
 ## Download Pre-Built APKs
 
 The easiest way to use this fork is to download pre-built APKs from the [Releases](https://github.com/cmwen/syncthing-android-fork/releases) page.
 
 1. Download the latest `app-release.apk` from [Releases](https://github.com/cmwen/syncthing-android-fork/releases)
 2. Enable "Install from Unknown Sources" on your Android device
-3. Install the APK
-4. (Optional) Verify SHA256 checksum against `sha256sum.txt`
+3. Install the APK (will upgrade from 1.x if already installed)
+4. Wait for database migration on first launch (can take several minutes)
+5. (Optional) Verify SHA256 checksum against `sha256sum.txt`
 
 ## Building from Source
 
@@ -128,8 +155,7 @@ line. If you build using Docker or DevContainer (recommended above), you don't n
 
         **NOTE:** You should check [Dockerfile](docker/Dockerfile) for the
         specific version numbers to insert in the command above.
-2. Go (see https://docs.syncthing.net/dev/building#prerequisites for the
-   required version)
+2. Go 1.23+ (required for Syncthing 2.0; see https://docs.syncthing.net/dev/building#prerequisites)
 3. Java version 11 (if not present in ``$PATH``, you might need to set
    ``$JAVA_HOME`` accordingly)
 4. Python version 3

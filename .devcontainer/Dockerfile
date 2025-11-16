@@ -21,11 +21,11 @@ RUN apt-get update && \
         openjdk-17-jdk \
         unzip \
         wget \
-        golang-1.22 && \
+        golang-1.23 && \
     rm -rf /var/lib/apt/lists/*
 
 # Set up Go in PATH (needed for Syncthing native build)
-ENV PATH=${PATH}:/usr/lib/go-1.22/bin
+ENV PATH=${PATH}:/usr/lib/go-1.23/bin
 
 # Install Android SDK command-line tools
 RUN mkdir -p ${ANDROID_HOME}/cmdline-tools && \
