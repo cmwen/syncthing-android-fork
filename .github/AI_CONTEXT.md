@@ -13,6 +13,8 @@ Syncthing-Android is a wrapper application that brings [Syncthing](https://githu
 - **Language**: Java (Android)
 - **Build System**: Gradle 8.5 with Kotlin DSL
 - **Native Components**: Go (for Syncthing core), compiled via NDK
+- **Syncthing Version**: 2.0.11 (LevelDB → SQLite migration)
+- **Go Version**: 1.23+ (required for Syncthing 2.0)
 - **Minimum Android SDK**: 21 (Android 5.0 Lollipop)
 - **Target Android SDK**: 33 (Android 13)
 - **Compile Android SDK**: 34 (Android 14)
@@ -79,7 +81,7 @@ The build process has two main phases:
 - **Java**: JDK 11 (configured in build files)
 - **Android SDK**: Platform 34, Build Tools 34.0.0
 - **Android NDK**: Version 25.2.9519653
-- **Go**: Version 1.22.7 (for building Syncthing)
+- **Go**: Version 1.23.12+ (required for Syncthing 2.0)
 - **Python**: Version 3 (for build scripts)
 
 ## Signing Configuration
@@ -179,9 +181,10 @@ This fork includes several improvements for AI understanding and automation:
 
 ## Versioning
 
-- **Version Code**: Incremented for each release (currently 4397)
-- **Version Name**: Semantic versioning (currently 1.28.3)
+- **Version Code**: Incremented for each release (currently 4398)
+- **Version Name**: Semantic versioning (currently 2.0.11)
 - Format: `major.minor.patch` or `major.minor.patch.hotfix`
+- **Syncthing Core**: v2.0.11 (major upgrade from 1.x series)
 
 ## License
 
